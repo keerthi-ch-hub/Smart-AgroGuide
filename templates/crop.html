@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .crop-box {
+        max-width: 650px;
+        margin: auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-label {
+        font-weight: 600;
+    }
+    body {
+        background-color: #e8f9e8 !important;
+    }
+</style>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">🌱 Crop Recommendation</h2>
+
+    <div class="crop-box">
+
+        <form id="cropForm">
+
+            <div class="mb-3">
+                <label class="form-label">Nitrogen (N)</label>
+                <input type="number" id="N" class="form-control" placeholder="Enter Nitrogen value" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Phosphorus (P)</label>
+                <input type="number" id="P" class="form-control" placeholder="Enter Phosphorus value" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Potassium (K)</label>
+                <input type="number" id="K" class="form-control" placeholder="Enter Potassium value" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Temperature (°C)</label>
+                <input type="number" id="temperature" class="form-control" placeholder="Enter Temperature" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Humidity (%)</label>
+                <input type="number" id="humidity" class="form-control" placeholder="Enter Humidity" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">pH Value</label>
+                <input type="number" id="ph" class="form-control" placeholder="Enter pH value" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Rainfall (mm)</label>
+                <input type="number" id="rainfall" class="form-control" placeholder="Enter Rainfall" required>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">
+                🌾 Recommend Crop
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="mt-4 p-3 bg-white border rounded text-center" id="resultBox" style="display:none;">
+        <h4><b>Recommended Crop:</b> <span id="result"></span></h4>
+    </div>
+</div>
+
+<script>
+document.getElementById("cropForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const data = {
+        N: document.getElementById("N").value,
+        P: document.getElementById("P").value,
+        K: document.getElementById("K").value,
+        temperature: document.getElementById("temperature").value,
+        humidity: document.getElementById("humidity").value,
+        ph: document.getElementById("ph").value,
+        rainfall: document.getElementById("rainfall").value,
+    };
+
+    fetch("/api/crop-recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+        document.getElementById("result").innerText = result.crop;
+        document.getElementById("resultBox").style.display = "block";
+    });
+});
+</script>
+
+{% endblock %}

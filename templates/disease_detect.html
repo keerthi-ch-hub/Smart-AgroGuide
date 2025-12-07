@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-white p-6 rounded shadow">
+  <h1 class="text-2xl font-bold text-green-700 mb-2">Crop Disease Detection</h1>
+  <p class="mb-4 text-gray-600">Upload a leaf image (jpg/png) and get disease detection</p>
+
+  <form id="imgForm" enctype="multipart/form-data" class="flex gap-2">
+    <input type="file" id="imgInput" name="image" accept="image/*" class="flex-1">
+    <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Detect</button>
+  </form>
+
+  <div id="diseaseResult" class="hidden mt-4 bg-gray-50 p-3 rounded"></div>
+</div>
+
+<script>
+document.getElementById('imgForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = document.getElementById('imgInput').files[0];
+  if (!f) return alert('Select an image');
+  const fd = new FormData(); fd.append('image', f);
+  try {
+    const res = await fetch('/api/detect-disease', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+    let html = `<strong>Disease:</strong> ${data.label || 'Unknown'}<br/><strong>Remedy:</strong> ${data.remedy || 'N/A'}`;
+    document.getElementById('diseaseResult').innerHTML = html;
+    document.getElementById('diseaseResult').classList.remove('hidden');
+  } catch (err) { alert('Error'); }
+});
+</script>
+{% endblock %}

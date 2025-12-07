@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-2xl font-bold text-green-700 mb-4">Plant Disease Detection</h2>
+
+<form id="uploadForm" enctype="multipart/form-data" class="bg-white p-5 rounded shadow">
+    <input type="file" id="image" name="image" accept="image/*" required />
+
+    <div class="mt-3">
+        <!-- IMPORTANT FIX -->
+        <button type="button" id="detectBtn" class="bg-green-600 text-white px-4 py-2 rounded">
+            Detect Disease
+        </button>
+    </div>
+</form>
+
+<div id="preview" class="mt-6"></div>
+<div id="result" class="mt-4 p-4 bg-white rounded shadow hidden"></div>
+
+<script>
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const img = document.createElement('img');
+    img.style.maxWidth = '300px';
+    img.style.border = '1px solid #ddd';
+    img.style.padding = '4px';
+    img.src = URL.createObjectURL(file);
+
+    const preview = document.getElementById('preview');
+    preview.innerHTML = '';
+    preview.appendChild(img);
+});
+
+// FIXED BUTTON HANDLER (NO RELOAD)
+document.getElementById('detectBtn').addEventListener('click', async () => {
+    const file = document.getElementById('image').files[0];
+    if (!file) { alert('Choose an image'); return; }
+
+    const fd = new FormData();
+    fd.append('image', file);
+
+    const btn = document.getElementById('detectBtn');
+    btn.disabled = true;
+    btn.innerText = 'Detecting...';
+
+    try {
+        const res = await fetch('/api/disease-detect', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        const result = document.getElementById('result');
+        result.classList.remove('hidden');
+
+        if (data.error) {
+            result.innerText = "Error: " + data.error;
+        } else {
+            result.innerHTML =
+                `<b>Result:</b> ${data.result}<br>
+                 <b>Confidence:</b> ${data.confidence}%`;
+        }
+    } catch (err) {
+        alert("Error: " + err);
+    }
+
+    btn.disabled = false;
+    btn.innerText = 'Detect Disease';
+});
+</script>
+
+{% endblock %}

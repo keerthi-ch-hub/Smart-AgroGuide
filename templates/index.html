@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-white p-6 rounded shadow">
+  <h1 class="text-2xl font-bold text-green-700 mb-2">Chatbot</h1>
+  <p class="mb-4 text-gray-600">Ask farming questions by typing or uploading audio (mp3/wav)</p>
+
+  <form id="textForm" class="flex gap-2 mb-4">
+    <input id="textInput" name="text" class="flex-1 border rounded px-3 py-2" placeholder="Type your question...">
+    <button class="bg-green-600 text-white px-4 py-2 rounded" type="submit">Ask</button>
+  </form>
+
+  <form id="audioForm" enctype="multipart/form-data" class="flex gap-2 mb-4">
+    <input id="audioInput" name="audio" type="file" accept="audio/*" class="flex-1">
+    <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Upload</button>
+  </form>
+
+  <div id="result" class="hidden bg-gray-50 p-4 rounded">
+    <h3 class="font-semibold text-green-700">Answer:</h3>
+    <p id="responseText" class="whitespace-pre-wrap"></p>
+    <audio id="audioPlayer" controls class="w-full hidden mt-3"></audio>
+  </div>
+</div>
+
+<script>
+async function postForm(formData) {
+  const res = await fetch('/api/chat', { method: 'POST', body: formData });
+  if (!res.ok) throw new Error('Server error');
+  return res.json();
+}
+
+document.getElementById('textForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = document.getElementById('textInput').value.trim();
+  if (!text) return;
+  const fd = new FormData(); fd.append('text', text);
+  try {
+    const data = await postForm(fd);
+    if (data.text) {
+      document.getElementById('responseText').textContent = data.text;
+      document.getElementById('result').classList.remove('hidden');
+      if (data.voice) {
+        const ap = document.getElementById('audioPlayer');
+        ap.src = data.voice; ap.classList.remove('hidden'); ap.load();
+      }
+    } else { alert("No response from server"); }
+  } catch (err) { alert('Error communicating with server'); }
+});
+
+document.getElementById('audioForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = document.getElementById('audioInput').files[0];
+  if (!f) return alert('Please select audio');
+  const fd = new FormData(); fd.append('audio', f);
+  try {
+    const data = await postForm(fd);
+    if (data.text) {
+      document.getElementById('responseText').textContent = data.text;
+      document.getElementById('result').classList.remove('hidden');
+      if (data.voice) {
+        const ap = document.getElementById('audioPlayer');
+        ap.src = data.voice; ap.classList.remove('hidden'); ap.load();
+      }
+    } else alert("No response");
+  } catch (err) { alert('Error'); }
+});
+</script>
+{% endblock %}
